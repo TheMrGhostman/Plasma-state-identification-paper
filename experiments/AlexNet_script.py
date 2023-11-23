@@ -17,6 +17,8 @@ from utils.utils import SWISH, get_activation, H_alpha_only, acc_tst
 
 import utils.datasets as d
 
+#0) login to Wandb
+wandb.login()
 
 #1) Nastavit Arguenty
 parser = argparse.ArgumentParser()
@@ -33,7 +35,7 @@ options = parser.parse_args()
 print(options)
 
 #2) Připravit data
-dataloaders=d.load_and_preprocess("sup", batch_size=options.batch_size)
+dataloaders=d.load_and_preprocess("sup", batch_size=options.batch_size, seed=options.seed)
 
 #3) vstupní velikost dat
 xdim = list(dataloaders["sup"].dataset.X.shape[1:])
@@ -81,28 +83,49 @@ else:
 	scheduler = None
 
 #7) model name
-model_name = f"AlexNet_lr={options.lr}_bs={options.batch_size}_scheduler={options.scheduler}"
+model_name = f"AlexNet_lr={options.lr}_bs={options.batch_size}_scheduler={options.scheduler}_seed={options.seed}"
 
-#8) vytvořit trenéra
-trener = Trainer(
+#8) Wandb logger init 
+wandb.init(
+      # Set the project where this run will be logged
+      project="bc-thesis", 
+      # We pass a run name (otherwise it’ll be randomly assigned, like sunshine-lollypop-10)
+      name=modelname, 
+      # Track hyperparameters and run metadata
+      config={
+	      "learning_rate": options.lr,
+	      "architecture": "AlexNet",
+	      "dataset": "PlasmaSequences",
+	      "epochs": options.epochs,
+	      "batch_size": options.batch_size,
+	      "scheduler": options.scheduler,
+	      "seed": options.seed,
+      }
+)
+
+#9) vytvořit trenéra
+trainer = Trainer(
 		model=f,
 		optimizer=optimizer,
 		loss_function=nn.CrossEntropyLoss(),
 		scheduler=scheduler,
 		tensorboard=True,
 		model_name=model_name,
-		early_stopping=30000,
-		save_path="checkpoints/",
+		early_stopping=None,
+    		save_path="saved_models",
 		verbose=True
 	)
 
 
-#9) nechat trenéra naučit model
+#10) nechat trenéra naučit model
 print("everything prepared -> Starting training!")
-history = trener(epochs=range(options.epochs), train_loader=dataloaders["sup"], validation_loader=dataloaders["val"])
+history = trainer(epochs=range(options.epochs), train_loader=dataloaders["sup"], validation_loader=dataloaders["val"])
 
-#10) 
-trener.loss_history["seed"] = options.seed
-trener.loss_history["options"] = options
+#11) 
+trainer.loss_history["seed"] = options.seed
+trainer.loss_history["options"] = options
 
 
+
+#13) close wandb log
+ wandb.finish()
