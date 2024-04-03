@@ -131,14 +131,18 @@ trener.loss_history["options"] = options
 
 test_discharges=load_unseen_test_data()
 
+results = []
 for key in test_discharges:
 	results = {}
 	y_hat, y = acc_tst(trener.model, test_discharges, key)
 	if len(np.unique(y)) !=1:
 		my_table = wandb.Table(columns=["labels", "predictions"], data=np.vstack([y, y_hat]).transpose())
 		run.log({f"Predictions - {key}": my_table})
-		wandb.config.update({f"Test/Accuracy-{key}": sklearn.metrics.accuracy_score(y,y_hat), f"Test/F1-{key}": sklearn.metrics.f1_score(y,y_hat, average="macro")})
+		#wandb.config.update({f"Test/Accuracy-{key}": sklearn.metrics.accuracy_score(y,y_hat), f"Test/F1-{key}": sklearn.metrics.f1_score(y,y_hat, average="macro")})
+		results.append([key, sklearn.metrics.accuracy_score(y,y_hat), sklearn.metrics.f1_score(y,y_hat, average="macro")])
 
+results = np.vstack(results).transpose()
+run.log({"Test_scores": wandb.Table(columns=["key", "Accuracy", "F1-score"], data=results)})
 
 torch.save(trener.loss_history, f"../saves/{model_name}.pt")
 run.finish()
