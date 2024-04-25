@@ -31,6 +31,7 @@ parser.add_argument("--sup_samples", type=float, default=1.0, help="ratio of lab
 parser.add_argument("--balanced", type=str, default="True", help="balanced classes within supervised samples")
 parser.add_argument("--seed", type=int, default=666, help="validation split seed")
 parser.add_argument("--ui", type=int, default=np.random.randint(10000), help="unique identifier")
+parser.add_argument("--early_stopping", type=int, default=30, help="patience with training")
 
 options = parser.parse_args()
 print(options)
@@ -45,27 +46,26 @@ print(f"xdim: {xdim}") # 5, 160
 #4) model
 f = nn.Sequential(
     nn.Conv1d(xdim[0],96,11,stride=4), 
-    nn.ReLU(),
+    get_activation(options.activation),
     nn.MaxPool1d(3,stride=2),
     nn.Conv1d(96,256,5,padding=2),
-    nn.ReLU(),
+    get_activation(options.activation),
     nn.MaxPool1d(3,stride=2),
     nn.Conv1d(256,384,3,padding=1),
-    nn.ReLU(),
+    get_activation(options.activation),
     nn.Conv1d(384,384,3,padding=1),
-    nn.ReLU(),
+    get_activation(options.activation),
     nn.Conv1d(384,256,3,padding=1), 
-    nn.ReLU(),
+    get_activation(options.activation),
     nn.MaxPool1d(3,stride=2), #5x5x256
     nn.Flatten(), #udela z toho 1x6400
     nn.Linear(3*256,4096),# 3 jsme spočítali průchodem naprázdno
-    nn.ReLU(),
+    get_activation(options.activation),
     nn.Dropout(p=0.5),
     nn.Linear(4096,4096),
-    nn.ReLU(),
+    get_activation(options.activation),
     nn.Dropout(p=0.5),
-    nn.Linear(4096,1000),
-    nn.Softmax(dim=1)
+    nn.Linear(4096,4)
 )
 
 #x,y = next(iter(dataloaders["sup"]))
@@ -103,7 +103,8 @@ run = wandb.init(
 	"sup_samples": options.sup_samples,
 	"balanced": options.balanced,
 	"seed": options.seed,
-	"ui": options.ui
+	"ui": options.ui,
+	"early_stopping": options.early_stopping,
     },
 )
 
