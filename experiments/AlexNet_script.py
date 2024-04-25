@@ -29,7 +29,7 @@ parser.add_argument("--lr", type=float, default=3e-3, help="learning rate")
 parser.add_argument("--scheduler", type=str, default="None", help="scheduler params \"milestone-gamma\" or \"milestone1-milestone2-gamma\" ")
 parser.add_argument("--sup_samples", type=float, default=1.0, help="ratio of labeled date")
 parser.add_argument("--balanced", type=str, default="True", help="balanced classes within supervised samples")
-parser.add_argument("--seed", type=int, default=666, help="validation split seed")
+parser.add_argument("--seed", type=int, default=33, help="validation split seed")
 parser.add_argument("--ui", type=int, default=np.random.randint(10000), help="unique identifier")
 parser.add_argument("--early_stopping", type=int, default=30, help="patience with training")
 
