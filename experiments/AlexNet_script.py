@@ -116,7 +116,7 @@ trener = Trainer(
 		scheduler=scheduler,
 		tensorboard=True,
 		model_name=model_name,
-		early_stopping=30000,
+		early_stopping=100,
 		save_path="../checkpoints",
 		verbose=True
 	)
