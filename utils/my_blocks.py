@@ -42,3 +42,19 @@ class ResNetBlock1d_stride(nn.Module):
 	def forward(self, x):
 		x = self.activation(self.block(x) + self.skip(x))
 		return x
+	
+class GRU_CLF(nn.Module):
+    def __init__(self, in_channels, out_channels=64, gru_layers=2, dropout=0, hidden_dim=32, nclasses=4, activation=nn.ReLU()):
+        super(GRU_CLF, self).__init__()
+        self.grus = nn.GRU(in_channels, out_channels, num_layers=gru_layers, dropout=dropout)
+        self.dense = nn.Sequential(
+            nn.Linear(out_channels, hidden_dim),
+            activation,
+            nn.Linear(hidden_dim, nclasses)
+        )
+
+    def forward(self, x):
+        h = self.grus(x.permute(2,0,1))
+        h = h[0].permute(1,2,0)[:,:,-1]
+        y = self.dense(h)
+        return y
