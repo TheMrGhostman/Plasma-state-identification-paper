@@ -6,6 +6,7 @@ Code related to paper "Semi-supervised Deep networks for plasma state identifica
 ## Instalation
 
 ## Datasets
+https://asep.lib.cas.cz/arl-cav/cs/detail-cav_un_epca-0571890-Plasma-state-identification-in-the-COMPASS-tokamak/
 
 ## Training
 
